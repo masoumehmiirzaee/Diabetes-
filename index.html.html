@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>GlucoTree · Diabetes Risk Screening</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#050b14;--pn:rgba(12,24,40,.78);--bd:#1d3a55;--tx:#d8ecf7;--mu:#7fa3bb;--a:#19e6c1;--b:#7c5cff;--bad:#ff5d7a;--ok:#19e6c1;--in:#0a1626;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#eef6fb;--pn:rgba(255,255,255,.85);--bd:#b9d3e3;--tx:#0d2233;--mu:#4d6b80;--a:#008c78;--b:#5a3fd6;--bad:#d62c4d;--ok:#008c78;--in:#fff}}
+:root[data-theme="light"]{--bg:#eef6fb;--pn:rgba(255,255,255,.85);--bd:#b9d3e3;--tx:#0d2233;--mu:#4d6b80;--a:#008c78;--b:#5a3fd6;--bad:#d62c4d;--ok:#008c78;--in:#fff}
+:root[data-theme="dark"]{color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;min-height:100vh}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:18px}
+h1{margin:0;font-size:26px;letter-spacing:.5px;background:linear-gradient(90deg,var(--a),var(--b));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--mu);font-size:12px;margin:2px 0 14px}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+nav button,.btn{background:var(--in);color:var(--tx);border:1px solid var(--bd);padding:8px 14px;border-radius:8px;cursor:pointer;font:inherit}
+nav button.on,.btn.pri{background:linear-gradient(90deg,var(--a),var(--b));color:#031018;border-color:transparent;font-weight:700}
+.card{background:var(--pn);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:12px;backdrop-filter:blur(8px)}
+.card h2{margin:0 0 10px;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--a)}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+label{display:block;font-size:11px;color:var(--mu);margin-bottom:2px}
+input,select,textarea{width:100%;background:var(--in);color:var(--tx);border:1px solid var(--bd);border-radius:6px;padding:7px;font:inherit}
+textarea{min-height:260px}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%}th,td{padding:7px 9px;border-bottom:1px solid var(--bd);text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:var(--mu);font-weight:400;font-size:11px;text-transform:uppercase}
+.big{font-size:34px;font-weight:700}.bar{height:10px;border-radius:5px;background:var(--in);border:1px solid var(--bd);overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--a),var(--b))}
+.pos{color:var(--bad)}.neg{color:var(--ok)}.mu{color:var(--mu)}.hide{display:none}
+.cm{display:grid;grid-template-columns:auto 1fr 1fr;gap:4px;max-width:340px;text-align:center}.cm div{padding:12px;border-radius:6px;background:var(--in);border:1px solid var(--bd)}
+#path div{padding:2px 0;color:var(--mu)}
+</style></head><body>
+<canvas id="bg"></canvas>
+<div class="wrap"><h1>GlucoTree</h1>
+<div class="sub">Diabetes risk screening · clinical-feature decision-tree ensemble</div>
+<div id="V_patient">
+<div class="card"><h2>Your health profile</h2><div class="mu" style="margin-bottom:10px">Enter your most recent clinical values. Nothing you type here is stored or sent anywhere. Leave defaults for values you do not know.</div><div class="grid" id="inp"></div></div>
+<div class="grid">
+<div class="card"><h2>Screening result</h2><div class="big" id="o1">…</div><div class="bar" style="margin:8px 0"><i id="o3" style="width:0"></i></div><div class="mu" id="o2"></div></div>
+<div class="card"><h2>Why this result</h2><div id="path"></div><div class="mu" id="b2" style="margin-top:8px"></div></div>
+</div>
+<div class="card mu" style="font-size:12px">This tool is a statistical screening aid for research and education. It is <b>not</b> a diagnosis. Please confirm any concern with a physician and a laboratory test (fasting glucose, HbA1c). <span id="ver"></span></div>
+</div>
+
+</div>
+<script>
+const MODEL=null; /* {ts:[compact trees],m:{median imputation map}} filled when a model is published */
+const F=['Pregnancies','Glucose','BloodPressure','SkinThickness','Insulin','BMI','DiabetesPedigreeFunction','Age'];
+const L=v=>({v}),N=(f,t,l,r)=>({f,t,l,r});
+const ORIG=N('Glucose',154,N('Age',29,L(0),N('BMI',26.7,L(0),N('Glucose',101,N('DiabetesPedigreeFunction',0.709,L(0),L(1)),N('BMI',43.3,N('DiabetesPedigreeFunction',0.464,L(0),L(1)),L(1))))),N('DiabetesPedigreeFunction',0.307,N('DiabetesPedigreeFunction',0.287,L(1),L(0)),L(1)));
+let base=JSON.parse(JSON.stringify(ORIG)),model=MODEL;
+const $=s=>document.querySelector(s);
+const fi=n=>typeof n.f==='string'?F.indexOf(n.f):n.f;
+function pred(n,x){while(Array.isArray(n)||(n&&n.f!==undefined)){if(Array.isArray(n))n=x[n[0]]<=n[1]?n[2]:n[3];else n=x[fi(n)]<=n.t?n.l:n.r}return typeof n==='number'?n:n.v}
+const enc=n=>n.f===undefined?+n.v.toFixed(2):[fi(n),+n.t.toFixed(2),enc(n.l),enc(n.r)];
+function trace(n,x){const o=[];while(n.f!==undefined){const k=fi(n),le=x[k]<=n.t;o.push(`${F[k]} = ${x[k]} ${le?'≤':'>'} ${+n.t.toFixed(3)}`);n=le?n.l:n.r}return o}
+function predict(){const bad=[];const x=F.map((_,i)=>{let v=+$('#i'+i).value;if(!Number.isFinite(v))v=0;const[lo,hi]=RG[i];if(v<lo||v>hi){bad.push(`${F[i]} must be between ${lo} and ${hi}`);v=Math.min(hi,Math.max(lo,v))}return v});$('#rw').textContent=bad.length?'Out of range, value clamped: '+bad.join('; '):'';const v=pred(base,x);
+ $('#path').innerHTML=trace(base,x).map(s=>`<div>→ ${s}</div>`).join('');$('#b2').textContent=v?'Rule-based screen: elevated pattern.':'Rule-based screen: no elevated pattern.';
+ let p=v;if(model){const xi=x.map((v,j)=>model.m[j]!==undefined&&v===0?model.m[j]:v);p=model.ts.reduce((s,t)=>s+pred(t,xi),0)/model.ts.length}
+ $('#o1').innerHTML=`<span class="${p>=.5?'pos':'neg'}">${p>=.5?'Elevated risk':'Lower risk'}${model?' · '+(p*100).toFixed(0)+'%':''}</span>`;$('#o3').style.width=(model?p*100:v*100)+'%';
+ $('#o2').textContent=model?`Ensemble of ${model.ts.length} decision trees (vote share).`:'Using the rule-tree baseline (ensemble not yet published).'}
+const def=[2,120,70,25,80,32,.5,35];
+const RG=[[0,20],[40,400],[30,200],[5,100],[0,900],[12,70],[0.05,2.5],[18,100]];
+$('#inp').innerHTML=F.map((f,i)=>`<div><label>${f} <span style="opacity:.7">(${RG[i][0]}–${RG[i][1]})</span></label><input id="i${i}" type="number" step="any" min="${RG[i][0]}" max="${RG[i][1]}" value="${def[i]}"></div>`).join('')+'<div id="rw" class="pos" style="grid-column:1/-1"></div>';
+document.querySelectorAll('#inp input').forEach(e=>e.oninput=predict);
+predict();
+// DNA backdrop
+const cv=$('#bg'),cx=cv.getContext('2d');let W,H,T=0;const rs=()=>{W=cv.width=innerWidth;H=cv.height=innerHeight};rs();addEventListener('resize',rs);
+const dots=Array.from({length:50},()=>({x:Math.random(),y:Math.random(),s:Math.random()*2+.5,v:Math.random()*.0004+.0001}));
+(function d(){T+=.012;cx.clearRect(0,0,W,H);const cs=getComputedStyle(document.documentElement),a=cs.getPropertyValue('--a').trim(),b=cs.getPropertyValue('--b').trim();
+ cx.globalAlpha=.5;dots.forEach(p=>{p.y=(p.y-p.v+1)%1;cx.fillStyle=a;cx.beginPath();cx.arc(p.x*W,p.y*H,p.s,0,7);cx.fill()});
+ [[.12,0],[.9,2]].forEach(([px,o])=>{for(let y=0;y<H;y+=14){const s=Math.sin(y/70+T+o)*38,x1=px*W+s,x2=px*W-s;cx.globalAlpha=.1+.12*Math.abs(Math.cos(y/70+T+o));cx.strokeStyle=a;cx.beginPath();cx.moveTo(x1,y);cx.lineTo(x2,y);cx.stroke();cx.fillStyle=a;cx.fillRect(x1-2,y,4,4);cx.fillStyle=b;cx.fillRect(x2-2,y,4,4)}});
+ requestAnimationFrame(d)})();
+</script></body></html>
