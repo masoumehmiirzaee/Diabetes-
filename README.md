@@ -11,6 +11,13 @@ Developed as a hands-on learning project during my transition into **Bioinformat
 
 Explore the interactive application directly in your browser without installing additional software.
 
+## 🖥️ Application Preview
+
+<p align="center">
+  <img src="screenshots/glucotree-home.png.png"
+       alt="GlucoTree Application"
+       width="850">
+</p>
 ## 🎯 Project Overview
 
 Diabetes is a complex metabolic disorder influenced by multiple clinical and demographic factors.
@@ -67,8 +74,43 @@ This approach makes the decision process easier to understand and provides an op
 ```text
 GlucoTree/
 │
-├── assets/
-│   └── Application resources
-│
 ├── index.html
-├
+│
+├── screenshots/
+│   ├── README.md
+│   └── glucotree-home.png
+│
+└── README.md
+```
+
+## 🚀 How to Use
+
+1. Open the [GlucoTree Live Demo](https://masoumehmiirzaee.github.io/Diabetes-/).
+2. Enter the required clinical and demographic information.
+3. Provide values for the eight input variables.
+4. Submit the information for evaluation.
+5. Review the estimated diabetes risk screening result.
+
+## 📊 Project Objectives
+
+- Explore computational approaches to health-related data.
+- Understand rule-based decision-tree logic.
+- Develop an interactive web-based screening application.
+- Connect programming concepts with Bioinformatics and Computational Biology.
+- Demonstrate interpretable decision-making using clinical and demographic variables.
+
+## ⚠️ Disclaimer
+
+GlucoTree is an educational project developed for learning and demonstration purposes.
+
+Its results are estimates generated through predefined rules and should not be considered medical diagnoses or substitutes for professional medical advice.
+
+## 👩‍💻 Author
+
+**Masoumeh Mirzaee**
+
+GitHub: [@masoumehmiirzaee](https://github.com/masoumehmiirzaee)
+
+## 📄 License
+
+This project is intended for educational and demonstration purposes.
